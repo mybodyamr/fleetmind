@@ -29,9 +29,9 @@ jobs:
         run: |
           bash scripts/check-migrations.test.sh
           bash scripts/check-migrations.sh supabase/migrations
-      - run: supabase start
-      - run: supabase db lint
-      - run: supabase test db
+      - run: bash scripts/ci-annotate.sh 'supabase start' supabase start
+      - run: bash scripts/ci-annotate.sh 'supabase db lint' supabase db lint
+      - run: bash scripts/ci-annotate.sh 'supabase test db' supabase test db
 
   e2e:
     runs-on: ubuntu-latest
