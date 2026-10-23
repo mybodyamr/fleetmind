@@ -12,7 +12,7 @@ export interface TestUser {
 async function call(path: string, init: RequestInit & { headers: Record<string, string> }) {
   const res = await fetch(`${url}${path}`, init);
   const text = await res.text();
-  let body: unknown = null;
+  let body: unknown;
   try {
     body = text ? JSON.parse(text) : null;
   } catch {
