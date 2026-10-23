@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "db:test": "supabase test db",
-    "e2e": "playwright test --pass-with-no-tests",
+    "e2e": "playwright test",
     "check:migrations": "bash scripts/check-migrations.sh supabase/migrations"
   },
   "dependencies": {

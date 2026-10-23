@@ -42,5 +42,15 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - run: bash scripts/ci-annotate.sh 'supabase start' supabase start
+      - name: Export local Supabase URL and keys (test environment only)
+        run: |
+          set -a; eval "$(supabase status -o env)"; set +a
+          echo "VITE_SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
+          echo "VITE_SUPABASE_ANON_KEY=${ANON_KEY:-$PUBLISHABLE_KEY}" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY:-$SECRET_KEY}" >> "$GITHUB_ENV"
       - run: npx playwright install --with-deps chromium
-      - run: npm run e2e
+      - run: bash scripts/ci-annotate.sh 'playwright' npm run e2e
