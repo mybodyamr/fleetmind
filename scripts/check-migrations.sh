@@ -21,13 +21,19 @@ normalize() {
   perl -0777 -pe 's{/\*.*?\*/}{ }gs; s{--[^\n]*}{ }g; $_ = lc $_; s{"}{}g; s{\s+}{ }g' "$1"
 }
 
+# Drops the dollar-quoted body of every CREATE FUNCTION/PROCEDURE: an INSERT inside a
+# function definition is code, not data. DO blocks are deliberately left in place.
+strip_function_bodies() {
+  perl -0777 -pe 's{create\s+(?:or\s+replace\s+)?(?:function|procedure)\b.*?(\$[a-z0-9_]*\$).*?\1}{create function stripped}gs'
+}
+
 status=0
 shopt -s nullglob
 for f in "$dir"/*.sql; do
   base="${f%.sql}"
   sql="$(normalize "$f")"
 
-  if printf '%s' "$sql" | grep -Eq '(^|[^a-z_])(drop table|drop column|truncate)([^a-z_]|$)'; then
+  if printf '%s' "$sql" | grep -Eq '(^|[^a-z_])(drop table|drop column)([^a-z_]|$)|(^|;) ?truncate([^a-z_]|$)'; then
     if [ ! -f "$base.review.md" ]; then
       echo "ERROR: $(basename "$f") has a destructive statement but $(basename "$base").review.md is missing" >&2
       status=1
@@ -44,7 +50,7 @@ for f in "$dir"/*.sql; do
         status=1
         ;;
     esac
-  done < <(printf '%s' "$sql" | grep -oE 'insert into [a-z0-9_.]+' | sed 's/^insert into //')
+  done < <(printf '%s' "$sql" | strip_function_bodies | grep -oE 'insert into [a-z0-9_.]+' | sed 's/^insert into //')
 done
 
 exit $status

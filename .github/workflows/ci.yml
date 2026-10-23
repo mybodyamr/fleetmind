@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.121.0
       - name: Migration guard (self-test, then real migrations)
         run: |
           bash scripts/check-migrations.test.sh

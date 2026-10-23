@@ -54,4 +54,16 @@ expect "multi-line insert into a non-reference table fails" 1
 fresh; echo "insert into public.roles (name) values ('driver');" > "$m/0001_x.sql"
 expect "insert into a reference table passes" 0
 
+fresh; echo 'revoke insert, update, delete, truncate on public.t from authenticated;' > "$m/0001_x.sql"
+expect "TRUNCATE inside a REVOKE privilege list is not a TRUNCATE statement" 0
+
+fresh; echo 'select 1; truncate t;' > "$m/0001_x.sql"
+expect "truncate after a semicolon fails" 1
+
+fresh; printf 'create or replace function f() returns void language plpgsql as $$\nbegin\n  insert into public.user_roles (user_id) values (1);\nend;\n$$;\n' > "$m/0001_x.sql"
+expect "insert inside a function body passes" 0
+
+fresh; printf 'do $$ begin insert into public.vehicles (id) values (1); end; $$;\n' > "$m/0001_x.sql"
+expect "insert inside a DO block into a non-reference table fails" 1
+
 exit $fail
