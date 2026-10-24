@@ -1,5 +1,5 @@
 begin;
-select plan(15);
+select plan(16);
 
 select set_config('tests.admin', tests.create_user('system_admin')::text, true);
 select set_config('tests.admin2', tests.create_user('system_admin')::text, true);
@@ -67,6 +67,13 @@ select public.revoke_role(current_setting('tests.admin2')::uuid, 'system_admin',
 select throws_ok(
   format($$select public.revoke_role(%L, 'system_admin', 'oops')$$, current_setting('tests.admin')),
   '55000', null, 'last system_admin cannot be revoked');
+
+-- 16. the check-then-delete above must not race with another admin doing the same
+select ok(
+  exists (select 1 from pg_locks
+          where locktype = 'advisory' and pid = pg_backend_pid()
+            and ((classid::bigint << 32) | objid::bigint) = hashtextextended('fleetmind.system_admin_guard', 0)),
+  'revoke_role takes the admin guard lock');
 
 select tests.reset();
 select * from finish();

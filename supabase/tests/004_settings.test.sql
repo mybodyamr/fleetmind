@@ -1,5 +1,5 @@
 begin;
-select plan(14);
+select plan(15);
 
 select set_config('tests.admin', tests.create_user('system_admin')::text, true);
 select set_config('tests.dispatcher', tests.create_user('dispatcher')::text, true);
@@ -37,6 +37,13 @@ select is(
   'tuning', 'the change is audited with its reason');
 select is((select updated_by from public.settings where key = 'gps.update_interval_seconds'),
   current_setting('tests.admin')::uuid, 'updated_by records the user');
+
+-- 15. two admins changing the interdependent GPS thresholds must not interleave
+select ok(
+  exists (select 1 from pg_locks
+          where locktype = 'advisory' and pid = pg_backend_pid()
+            and ((classid::bigint << 32) | objid::bigint) = hashtextextended('fleetmind.settings', 0)),
+  'set_setting takes the settings lock');
 
 -- 11-12. any signed-in user can read defaults but cannot write directly
 select tests.as_user(current_setting('tests.driver')::uuid);
