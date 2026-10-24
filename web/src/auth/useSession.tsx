@@ -5,9 +5,11 @@ export interface SessionState {
   user: { id: string; email?: string } | null;
   permissions: Set<string>;
   loading: boolean;
+  /** True when the permissions could not be loaded (network, expired token, disabled account). */
+  error: boolean;
 }
 
-const signedOut: SessionState = { user: null, permissions: new Set(), loading: false };
+const signedOut: SessionState = { user: null, permissions: new Set(), loading: false, error: false };
 const SessionContext = createContext<SessionState | null>(null);
 
 /** Loads the signed-in user and their permission codes once for the whole app. */
@@ -17,18 +19,21 @@ export function SessionProvider({ children }: { children: ReactNode }): JSX.Elem
   useEffect(() => {
     const supabase = getSupabase();
     let cancelled = false;
+    let latest = 0; // only the newest load may update the state
 
     const load = async (user: { id: string; email?: string } | null) => {
+      const mine = ++latest;
       if (!user) {
         if (!cancelled) setState(signedOut);
         return;
       }
       const { data, error } = await supabase.rpc('my_permissions');
-      if (cancelled) return;
+      if (cancelled || mine !== latest) return;
       setState({
         user: { id: user.id, email: user.email },
         permissions: new Set(error ? [] : (data as string[])),
         loading: false,
+        error: Boolean(error),
       });
     };
 

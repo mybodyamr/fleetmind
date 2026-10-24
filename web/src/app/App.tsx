@@ -5,7 +5,7 @@ import { useSession } from '../auth/useSession';
 import { getSupabase } from '../lib/supabase';
 
 export function App(): JSX.Element {
-  const { user, loading } = useSession();
+  const { user, loading, error } = useSession();
 
   useEffect(() => {
     document.documentElement.dir = 'rtl';
@@ -33,12 +33,19 @@ export function App(): JSX.Element {
         </button>
       </header>
       <main className="shell__main">
+        {error ? (
+          <section className="denied">
+            <p role="alert">تعذّر تحميل صلاحياتك. تحقق من اتصالك بالإنترنت ثم أعد المحاولة، أو سجّل الخروج وادخل من جديد. إن تكرر الخطأ فقد يكون حسابك موقوفًا، فتواصل مع مدير النظام.</p>
+            <button type="button" onClick={() => window.location.reload()}>إعادة المحاولة</button>
+          </section>
+        ) : (
         <RequirePermission code="settings.write">
           <section aria-labelledby="settings-title" className="panel">
             <h2 id="settings-title">إعدادات النظام</h2>
             <p>تظهر هنا إعدادات التتبع والتنبيهات عند إضافتها.</p>
           </section>
         </RequirePermission>
+        )}
       </main>
     </>
   );

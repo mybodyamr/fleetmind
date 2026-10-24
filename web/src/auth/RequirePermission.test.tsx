@@ -11,6 +11,7 @@ function sessionWith(permissions: string[], loading = false) {
     user: { id: 'u1', email: 'a@example.com' },
     permissions: new Set(permissions),
     loading,
+    error: false,
   } as ReturnType<typeof useSession>);
 }
 
