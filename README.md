@@ -22,3 +22,7 @@ npm run dev
 | `npm run e2e` | اختبارات Playwright |
 
 لا يوضع `service_role` أو أي سر في كود الواجهة (يفحصه `web/src/no-secrets.test.ts`).
+
+## الحسابات
+
+التسجيل الذاتي مغلق (`enable_signup = false`). الحسابات تُنشأ من لوحة Supabase أو بمفتاح `service_role` من الخادم فقط، ثم يُضاف لها صف في `profiles` ودور عبر `assign_role`. تعطيل الحساب يتم عبر `set_profile_active` (يُسجَّل في سجل التدقيق، ولا يمكن تعطيل آخر `system_admin` نشط).
