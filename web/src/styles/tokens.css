@@ -1,0 +1,33 @@
+/* FleetMind design tokens. Palette comes from the road: highway-sign green, asphalt,
+   reflective yellow, and the paper of a delivery note. */
+:root {
+  --color-sign: #0b5d45;        /* highway sign green; white text on it is 8:1 */
+  --color-sign-deep: #08463a;
+  --color-asphalt: #1c2429;     /* body text, top bar */
+  --color-paper: #f6f7f4;       /* page */
+  --color-surface: #ffffff;
+  --color-line: #cfd6d1;
+  --color-muted: #55636b;
+  --color-reflective: #f4c430;  /* focus ring and the lane line */
+  --color-danger: #b3261e;
+
+  --font-sans: 'IBM Plex Sans Arabic', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+  --text-wordmark: 2.5rem;
+  --leading-body: 1.75;          /* Arabic needs generous leading */
+  --leading-tight: 1.3;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+
+  --radius: 4px;
+  --tap: 3rem;                   /* minimum touch target height */
+}

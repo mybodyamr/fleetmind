@@ -1,0 +1,56 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  db:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - name: Migration guard (self-test, then real migrations)
+        run: |
+          bash scripts/check-migrations.test.sh
+          bash scripts/check-migrations.sh supabase/migrations
+      - run: bash scripts/ci-annotate.sh 'supabase start' supabase start
+      - run: bash scripts/ci-annotate.sh 'supabase db lint' supabase db lint
+      - run: bash scripts/ci-annotate.sh 'supabase test db' supabase test db
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - run: bash scripts/ci-annotate.sh 'supabase start' supabase start
+      - name: Export local Supabase URL and keys (test environment only)
+        run: |
+          set -a; eval "$(supabase status -o env)"; set +a
+          echo "VITE_SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
+          echo "VITE_SUPABASE_ANON_KEY=${ANON_KEY:-$PUBLISHABLE_KEY}" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY:-$SECRET_KEY}" >> "$GITHUB_ENV"
+      - run: npx playwright install --with-deps chromium
+      - run: bash scripts/ci-annotate.sh 'playwright' npm run e2e
